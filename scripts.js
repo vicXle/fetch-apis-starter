@@ -33,8 +33,8 @@ function displayData(data){
 	//build image URL base
 	let imgUrlStart = "http://openweathermap.org/img/wn/";
 	let imgUrlEnd = "@2x.png";
-	let currentIcon; //TO-DO
-	let imageUrl; // TO-DO
+	let currentIcon = data.current.weather[0].icon;
+	let imageUrl = `${imgUrlStart}${currentIcon}${imgUrlEnd}`;
 
 	//element to display current weather
 	let current = document.getElementById("current");
@@ -42,10 +42,38 @@ function displayData(data){
 	let forecast = document.getElementById("forecast");
 
 	//the current weather
-	//TO-DO
+	let currentHTML = `
+		<h3>${data.timezone}</h3>
+		<img src="${imageUrl}" alt="${data.current.weather[0].description}">
+		<p>
+			<b>Current Weather: </b>${Math.round(data.current.temp)}&deg;F and ${data.current.weather[0].main}
+		</p>
+	`;
+
+	current.innerHTML = currentHTML;
+
+	let forecastHTML = "";
 
 	//the upcoming forecast
-	// TO-DO
+	for(let day of data.daily){
+		let iconUrl = `http://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`;
+
+		let ms = day.dt * 1000;
+		let date = new Date(ms);
+
+		let forecastHTML = `
+		<section class="day">
+			<img src="${iconUrl}" alt="${day.weather[0].description}">
+			<h3>${date.toLocaleString("en-us", {weekday: "long"})}</h3>
+
+			<p><b>High: </b>${Math.round(day.temp.max)}&deg;F</p>
+			<p><b>Low: </b>${Math.round(day.temp.min)}&deg;F</p>
+			<p>${day.weather[0].main}</p>
+		</section>
+	`;
+
+		forecast.innerHTML += forecastHTML;
+	}
 }
 
 //build URL for API call
@@ -54,7 +82,7 @@ function getWeather(location){
 	let urlStart = "https://api.openweathermap.org/data/2.5/onecall?lat=";
 	let urlParam1 = "&lon=";
 	let urlMid = "&exclude=alerts&appid=";
-	let apiKey = "";
+	let apiKey = "a15726f63f7b415988e2c41e7ec4ccee";
 	let urlEnd = "&units=imperial";
 
 	// storing the data about the user's location, used in the endpoint
@@ -62,11 +90,17 @@ function getWeather(location){
 	let longitude = location.coords.longitude;
 
 	// building our endpoint from the parts above
-	let url; // TO-DO
+	let url = `${urlStart}${latitude}${urlParam1}${longitude}${urlMid}${apiKey}${urlEnd}`;
 
 
 	//fetch call to API
-	// TO-DO
+	fetch(url)
+		.then(Response => Response.json())
+		.then(data => {
+			console.log(data);
+			displayData(data);
+		})
+		.catch(err => console.error(err.message));
 }
 
 //on page load, get geolocation
